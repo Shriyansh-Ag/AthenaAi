@@ -12,7 +12,7 @@ function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
   const router = useRouter();
-  const [status, setStatus] = useState<'verifying' | 'success' | 'error'>('verifying');
+  const [status, setStatus] = useState<'verifying' | 'success' | 'error'>(token ? 'verifying' : 'error');
 
   const verifyMutation = useMutation({
     mutationFn: authApi.verifyEmail,
@@ -20,7 +20,6 @@ function VerifyEmailContent() {
 
   useEffect(() => {
     if (!token) {
-      setStatus('error');
       return;
     }
 

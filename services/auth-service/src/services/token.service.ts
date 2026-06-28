@@ -1,19 +1,15 @@
+
 import crypto from 'crypto';
 import { TokenRepository } from '../repositories/token.repository';
-import {
-  signAccessToken,
-  signRefreshToken,
-  verifyRefreshToken,
-  hashToken,
-} from '../utils/jwt';
-import { UnauthorizedError } from '../utils/app-error';
 import type { JwtAccessPayload, AuthTokens } from '../types';
+import { signAccessToken, hashToken } from '../utils/jwt';
+import { UnauthorizedError } from '../utils/app-error';
 
 const REFRESH_TOKEN_EXPIRY_DAYS = 7;
 const MAX_SESSIONS_PER_USER = 5;
 
 export class TokenService {
-  constructor(private tokenRepository: TokenRepository) {}
+  constructor(private tokenRepository: TokenRepository) { }
 
   async generateTokenPair(payload: JwtAccessPayload): Promise<AuthTokens> {
     const accessToken = signAccessToken(payload);
@@ -29,11 +25,6 @@ export class TokenService {
       await this.tokenRepository.deleteAllForUser(payload.userId);
     }
 
-    const tokenId = crypto.randomUUID();
-    const refreshTokenJwt = signRefreshToken({
-      userId: payload.userId,
-      tokenId,
-    });
 
     await this.tokenRepository.create(
       payload.userId,
@@ -60,6 +51,10 @@ export class TokenService {
       throw new UnauthorizedError(
         'Refresh token not recognized. All sessions revoked for security.'
       );
+    }
+
+    if (existingToken.userId.toString() !== userPayload.userId) {
+      throw new UnauthorizedError('Token does not belong to user');
     }
 
     if (existingToken.expiresAt < new Date()) {

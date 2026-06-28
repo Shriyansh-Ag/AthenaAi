@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthService } from '../services/auth.service';
-import { hashToken } from '../utils/jwt';
 import type { AuthenticatedRequest } from '../types';
 
 const REFRESH_TOKEN_COOKIE = 'athena_refresh_token';
@@ -106,7 +105,7 @@ export class AuthController {
       if (authHeader && authHeader.startsWith('Bearer ')) {
         const jwt = await import('jsonwebtoken');
         try {
-          const decoded = jwt.default.decode(authHeader.split(' ')[1]) as any;
+          const decoded = jwt.default.decode(authHeader.split(' ')[1]) as { userId?: string } | null;
           userId = decoded?.userId;
         } catch {
           // Token can't be decoded

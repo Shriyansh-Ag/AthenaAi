@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -35,8 +34,8 @@ export function LoginForm() {
         toast.success('Logged in successfully');
         router.push(returnUrl);
       },
-      onError: (error: any) => {
-        const message = error.response?.data?.message || 'Failed to login';
+      onError: (error: unknown) => {
+        const message = (error as { response?: { data?: { message?: string } } }).response?.data?.message || 'Failed to login';
         toast.error(message);
       }
     });

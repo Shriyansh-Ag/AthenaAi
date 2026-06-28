@@ -34,8 +34,8 @@ export function RegisterForm() {
         toast.success('Account created successfully. Please check your email to verify.');
         router.push('/profile');
       },
-      onError: (error: any) => {
-        const message = error.response?.data?.message || 'Failed to register';
+      onError: (error: unknown) => {
+        const message = (error as { response?: { data?: { message?: string } } }).response?.data?.message || 'Failed to register';
         toast.error(message);
       }
     });

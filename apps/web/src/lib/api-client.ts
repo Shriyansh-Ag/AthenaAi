@@ -2,7 +2,7 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from '../stores/auth-store';
 import type { RefreshResponse } from '../types/auth';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001/api';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
@@ -28,10 +28,10 @@ apiClient.interceptors.request.use(
 let isRefreshing = false;
 let failedQueue: Array<{
   resolve: (value?: unknown) => void;
-  reject: (reason?: any) => void;
+  reject: (reason?: unknown) => void;
 }> = [];
 
-const processQueue = (error: any, token: string | null = null) => {
+const processQueue = (error: unknown, token: string | null = null) => {
   failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);

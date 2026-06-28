@@ -1,8 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { authApi } from '../lib/auth';
 import { useAuthStore } from '../stores/auth-store';
-import type { ApiError } from '../types/auth';
-import { AxiosError } from 'axios';
 
 export function useAuth() {
   const queryClient = useQueryClient();

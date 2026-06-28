@@ -1,0 +1,381 @@
+openapi: 3.0.3
+info:
+  title: AthenaAI Document Service
+  description: |
+    Document upload and management API for AthenaAI.
+    Supports PDF, DOCX, PPTX, TXT, Markdown, CSV, PNG, JPEG, and WebP files.
+  version: 0.1.0
+  contact:
+    name: AthenaAI Team
+
+servers:
+  - url: http://localhost:4002/api
+    description: Development server
+
+security:
+  - BearerAuth: []
+
+paths:
+  /documents/upload:
+    post:
+      summary: Upload documents
+      description: Upload one or more files. Max 10 files per request. Max 50 MB per file.
+      tags: [Documents]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: Files to upload (max 10)
+      responses:
+        '201':
+          description: Upload results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      uploaded:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Document'
+                      failed:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            filename:
+                              type: string
+                            error:
+                              type: string
+                      summary:
+                        type: object
+                        properties:
+                          total:
+                            type: integer
+                          successful:
+                            type: integer
+                          failed:
+                            type: integer
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '413':
+          description: File too large
+        '415':
+          description: Unsupported file type
+
+  /documents:
+    get:
+      summary: List documents
+      description: Paginated list of user's documents with search and filter support.
+      tags: [Documents]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Search by document name
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [uploaded, queued, processing, processed, failed]
+        - name: mimeType
+          in: query
+          schema:
+            type: string
+          description: Filter by MIME type
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [uploadedAt, displayName, size]
+            default: uploadedAt
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+      responses:
+        '200':
+          description: Paginated document list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Document'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /documents/{id}:
+    get:
+      summary: Get document
+      tags: [Documents]
+      parameters:
+        - $ref: '#/components/parameters/DocumentId'
+      responses:
+        '200':
+          description: Document details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Document'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      summary: Update document
+      description: Rename a document by updating its displayName.
+      tags: [Documents]
+      parameters:
+        - $ref: '#/components/parameters/DocumentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [displayName]
+              properties:
+                displayName:
+                  type: string
+                  minLength: 1
+                  maxLength: 200
+      responses:
+        '200':
+          description: Updated document
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Document'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      summary: Delete document
+      description: Soft-deletes a document (marks status as deleted).
+      tags: [Documents]
+      parameters:
+        - $ref: '#/components/parameters/DocumentId'
+      responses:
+        '200':
+          description: Document deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /documents/{id}/download:
+    get:
+      summary: Download document
+      tags: [Documents]
+      parameters:
+        - $ref: '#/components/parameters/DocumentId'
+      responses:
+        '200':
+          description: File download
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /documents/health/status:
+    get:
+      summary: Health check
+      tags: [System]
+      security: []
+      responses:
+        '200':
+          description: Service health status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  service:
+                    type: string
+                    example: document-service
+                  version:
+                    type: string
+                    example: 0.1.0
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    DocumentId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Document ID (MongoDB ObjectId)
+
+  schemas:
+    Document:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        originalName:
+          type: string
+        displayName:
+          type: string
+        mimeType:
+          type: string
+        extension:
+          type: string
+        size:
+          type: integer
+        status:
+          type: string
+          enum: [uploaded, queued, processing, processed, failed, deleted]
+        processingStage:
+          type: string
+          enum: [none, pending, extracting, embedding, complete, error]
+        checksum:
+          type: string
+        uploadedAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer
+
+  responses:
+    BadRequest:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              code:
+                type: string
+                example: VALIDATION_ERROR
+              message:
+                type: string
+
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              code:
+                type: string
+                example: UNAUTHORIZED
+              message:
+                type: string
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              code:
+                type: string
+                example: NOT_FOUND
+              message:
+                type: string

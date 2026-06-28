@@ -2,12 +2,12 @@ import { apiClient } from './api-client';
 import type { AuthResponse, User } from '../types/auth';
 
 export const authApi = {
-  login: async (data: any): Promise<AuthResponse> => {
+  login: async (data: Record<string, unknown>): Promise<AuthResponse> => {
     const res = await apiClient.post<AuthResponse>('/auth/login', data);
     return res.data;
   },
 
-  register: async (data: any): Promise<AuthResponse> => {
+  register: async (data: Record<string, unknown>): Promise<AuthResponse> => {
     const res = await apiClient.post<AuthResponse>('/auth/register', data);
     return res.data;
   },
@@ -20,7 +20,7 @@ export const authApi = {
     await apiClient.post('/auth/forgot-password', data);
   },
 
-  resetPassword: async (data: any): Promise<void> => {
+  resetPassword: async (data: Record<string, unknown>): Promise<void> => {
     await apiClient.post('/auth/reset-password', data);
   },
 

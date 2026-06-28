@@ -45,8 +45,8 @@ export function ResetPasswordForm() {
         toast.success('Password reset successfully. You can now login.');
         router.push('/login');
       },
-      onError: (error: any) => {
-        const message = error.response?.data?.message || 'Failed to reset password';
+      onError: (error: unknown) => {
+        const message = (error as { response?: { data?: { message?: string } } }).response?.data?.message || 'Failed to reset password';
         toast.error(message);
       }
     });

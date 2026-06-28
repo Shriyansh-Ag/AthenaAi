@@ -23,7 +23,7 @@ export function errorHandler(
   }
 
   // Mongoose duplicate key error
-  if ((err as any).code === 11000) {
+  if ((err as Error & { code?: number }).code === 11000) {
     res.status(409).json({
       success: false,
       code: 'CONFLICT',
