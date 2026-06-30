@@ -54,6 +54,13 @@ router.get(
   documentController.list
 );
 
+// Get stats
+router.get(
+  '/stats',
+  authenticate,
+  documentController.getStats
+);
+
 // Get single document
 router.get(
   '/:id',
@@ -81,6 +88,13 @@ router.delete(
   '/:id',
   authenticate,
   documentController.delete
+);
+
+// Search documents
+router.post(
+  '/search',
+  authenticate,
+  documentController.search
 );
 
 // Health check

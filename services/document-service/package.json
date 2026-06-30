@@ -11,6 +11,14 @@
     "lint": "eslint src/"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^4.0.1",
+    "@ai-sdk/google": "^4.0.2",
+    "@ai-sdk/openai": "^4.0.2",
+    "@langchain/core": "^1.2.1",
+    "@langchain/langgraph": "^1.4.7",
+    "@langchain/openai": "^1.5.3",
+    "@qdrant/js-client-rest": "^1.18.0",
+    "ai": "^7.0.4",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.4.2",

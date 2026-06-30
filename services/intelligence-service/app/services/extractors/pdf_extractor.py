@@ -73,6 +73,31 @@ class PDFExtractor(BaseExtractor):
                 )
                 content_blocks.append(cb)
                 
+            # Fallback for scanned PDFs
+            if not content_blocks and len(tables) == 0:
+                # Convert page to image for OCR
+                pix = page.get_pixmap(dpi=300)
+                from PIL import Image
+                import pytesseract
+                import io
+                
+                img = Image.open(io.BytesIO(pix.tobytes("png")))
+                try:
+                    ocr_text = pytesseract.image_to_string(img)
+                    if ocr_text.strip():
+                        all_text += ocr_text.strip() + " "
+                        cb = ContentBlock(type="paragraph", text=ocr_text.strip())
+                        content_blocks.append(cb)
+                        
+                        # Check for formulas in OCR text
+                        import re
+                        lines = [line.strip() for line in ocr_text.split('\n') if line.strip()]
+                        for line in lines:
+                            if re.search(r'[\+\-\=\/\*\^\(\)\[\]\{\}\∑\∫\∞\√]', line) and not re.search(r'[a-zA-Z]{5,}', line):
+                                content_blocks.append(ContentBlock(type="formula", text=line))
+                except Exception as e:
+                    print(f"OCR failed for PDF page: {e}")
+
             pages.append(ExtractedPage(page_number=page_num + 1, content=content_blocks))
             
         doc.close()

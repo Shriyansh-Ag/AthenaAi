@@ -8,6 +8,16 @@ const envSchema = z.object({
   MONGODB_URI: z.string().url().default('mongodb://localhost:27017/athena-documents'),
 
   JWT_ACCESS_SECRET: z.string().min(16),
+  QDRANT_API_KEY: z.string().optional(),
+
+  // LLM API Keys
+  OPENAI_API_KEY: z.string().optional(),
+  ANTHROPIC_API_KEY: z.string().optional(),
+  GOOGLE_API_KEY: z.string().optional(),
+  DEEPSEEK_API_KEY: z.string().optional(),
+
+  // Message Queue
+  REDIS_URL: z.string().url().default('redis://localhost:6379'),
 
   CORS_ORIGIN: z.string().default('http://localhost:3000'),
 

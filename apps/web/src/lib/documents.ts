@@ -99,4 +99,20 @@ export const documentsApi = {
     link.remove();
     window.URL.revokeObjectURL(url);
   },
+
+  /**
+   * Search chunks in documents.
+   */
+  search: async (query: import('../types/document').SearchQuery): Promise<import('../types/document').SearchResponse> => {
+    const res = await apiClient.post<import('../types/document').SearchResponse>('/documents/search', query);
+    return res.data;
+  },
+
+  /**
+   * Get user document statistics.
+   */
+  getStats: async (): Promise<{ success: boolean; data: import('../types/document').DocumentStats }> => {
+    const res = await apiClient.get<{ success: boolean; data: import('../types/document').DocumentStats }>('/documents/stats');
+    return res.data;
+  }
 };

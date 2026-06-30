@@ -31,3 +31,16 @@ export const documentQueryDto = z.object({
 });
 
 export type DocumentQueryDto = z.infer<typeof documentQueryDto>;
+
+export const searchQueryDto = z.object({
+  query: z.string().min(1, 'Search query cannot be empty'),
+  type: z.enum(['semantic', 'keyword', 'hybrid']).default('hybrid'),
+  filters: z.object({
+    course: z.string().optional(),
+    tags: z.array(z.string()).optional()
+  }).optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(10)
+});
+
+export type SearchQueryDto = z.infer<typeof searchQueryDto>;

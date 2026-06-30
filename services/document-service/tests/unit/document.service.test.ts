@@ -4,7 +4,29 @@ import { DocumentRepository } from '../../src/repositories/document.repository';
 import type { StorageProvider } from '../../src/storage/storage-provider.interface';
 import type { VirusScanProvider } from '../../src/validators/virus-scan.interface';
 
+vi.mock('../../src/services/intelligence.client', () => ({
+  intelligenceClient: {
+    extractDocument: vi.fn().mockResolvedValue({ pages: [] }),
+    chunkDocument: vi.fn().mockResolvedValue({ chunks: [{ text: 'mock chunk', metadata: { chunk_index: 0 } }] }),
+  },
+}));
+import { intelligenceClient } from '../../src/services/intelligence.client';
+
+vi.mock('../../src/models/chunk.model', () => ({
+  ChunkModel: {
+    insertMany: vi.fn().mockResolvedValue([]),
+  },
+}));
+import { ChunkModel } from '../../src/models/chunk.model';
+
 // ── Mocks ────────────────────────────────────────────────────────────────
+
+vi.mock('../../src/services/qdrant.client', () => ({
+  qdrantClient: {
+    deleteByDocumentId: vi.fn().mockResolvedValue(true),
+    search: vi.fn().mockResolvedValue([]),
+  },
+}));
 
 function createMockFile(overrides: Partial<Express.Multer.File> = {}): Express.Multer.File {
   return {

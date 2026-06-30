@@ -12,6 +12,8 @@ export class DocumentRepository {
     storagePath: string;
     storageKey: string;
     checksum: string;
+    status?: string;
+    processingStage?: string;
   }): Promise<IDocument> {
     const doc = new DocumentModel(data);
     return doc.save();
@@ -79,10 +81,10 @@ export class DocumentRepository {
   async updateById(
     id: string,
     userId: string,
-    update: Partial<Pick<IDocument, 'displayName' | 'status' | 'processingStage' | 'metadata'>>
+    update: Partial<Pick<IDocument, 'displayName' | 'status' | 'processingStage' | 'metadata' | 'extractedContent'>>
   ): Promise<IDocument | null> {
     return DocumentModel.findOneAndUpdate(
-      { _id: id, userId },
+      { _id: id, userId, status: { $ne: 'deleted' } },
       { $set: update },
       { new: true }
     );
@@ -106,5 +108,82 @@ export class DocumentRepository {
 
   async countByUserId(userId: string): Promise<number> {
     return DocumentModel.countDocuments({ userId, status: { $ne: 'deleted' } });
+  }
+
+  async getUserStats(userId: string): Promise<any> {
+    const pipeline = [
+      { $match: { userId, status: { $ne: 'deleted' } } },
+      {
+        $facet: {
+          overview: [
+            {
+              $group: {
+                _id: null,
+                totalDocuments: { $sum: 1 },
+                totalStorageUsed: { $sum: '$size' },
+                processedCount: {
+                  $sum: { $cond: [{ $eq: ['$status', 'processed'] }, 1, 0] }
+                },
+                processingCount: {
+                  $sum: { $cond: [{ $eq: ['$status', 'processing'] }, 1, 0] }
+                },
+                failedCount: {
+                  $sum: { $cond: [{ $eq: ['$status', 'failed'] }, 1, 0] }
+                }
+              }
+            }
+          ],
+          byType: [
+            {
+              $group: {
+                _id: '$mimeType',
+                count: { $sum: 1 },
+                storage: { $sum: '$size' }
+              }
+            },
+            { $sort: { count: -1 } }
+          ],
+          storageOverTime: [
+            {
+              $match: {
+                uploadedAt: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } // last 30 days
+              }
+            },
+            {
+              $group: {
+                _id: {
+                  $dateToString: { format: '%Y-%m-%d', date: '$uploadedAt' }
+                },
+                size: { $sum: '$size' },
+                count: { $sum: 1 }
+              }
+            },
+            { $sort: { _id: 1 } }
+          ],
+          recentErrors: [
+            { $match: { status: 'failed' } },
+            { $sort: { uploadedAt: -1 } },
+            { $limit: 5 },
+            { $project: { displayName: 1, uploadedAt: 1, status: 1 } }
+          ]
+        }
+      }
+    ];
+
+    const result = await DocumentModel.aggregate(pipeline as any[]);
+    const data = result[0];
+
+    return {
+      overview: data.overview[0] || {
+        totalDocuments: 0,
+        totalStorageUsed: 0,
+        processedCount: 0,
+        processingCount: 0,
+        failedCount: 0
+      },
+      byType: data.byType || [],
+      storageOverTime: data.storageOverTime || [],
+      recentErrors: data.recentErrors || []
+    };
   }
 }

@@ -181,3 +181,57 @@ export function formatDate(dateStr: string): string {
     year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
   });
 }
+
+export interface SearchQuery {
+  query: string;
+  type?: 'semantic' | 'keyword' | 'hybrid';
+  filters?: {
+    course?: string;
+    tags?: string[];
+  };
+  page?: number;
+  limit?: number;
+}
+
+export interface SearchChunkResult {
+  id: string;
+  score: number;
+  payload: {
+    documentId: string;
+    documentName?: string;
+    chunkIndex: number;
+    text: string;
+    metadata?: Record<string, any>;
+    namespace?: string;
+  };
+}
+
+export interface SearchResponse {
+  success: boolean;
+  data: SearchChunkResult[];
+}
+export interface DocumentStats {
+  overview: {
+    totalDocuments: number;
+    totalStorageUsed: number;
+    processedCount: number;
+    processingCount: number;
+    failedCount: number;
+  };
+  byType: Array<{
+    _id: string;
+    count: number;
+    storage: number;
+  }>;
+  storageOverTime: Array<{
+    _id: string;
+    size: number;
+    count: number;
+  }>;
+  recentErrors: Array<{
+    _id: string;
+    displayName: string;
+    uploadedAt: string;
+    status: string;
+  }>;
+}

@@ -5,8 +5,13 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { env } from './config/env';
 import { documentRoutes } from './routes/document.routes';
+import conversationRoutes from './routes/conversation.routes';
+import quizRoutes from './routes/quiz.routes';
+import plannerRoutes from './routes/planner.routes';
+import analyticsRoutes from './routes/analytics.routes';
 import { generalLimiter } from './middleware/rate-limit';
 import { errorHandler } from './middleware/error-handler';
+import { qdrantClient } from './services/qdrant.client';
 import { logger } from './utils/logger';
 
 const app: Express = express();
@@ -35,6 +40,10 @@ app.set('trust proxy', 1);
 
 // ── Routes ───────────────────────────────────────────────────────────────
 app.use('/api/documents', documentRoutes);
+app.use('/api/chat', conversationRoutes);
+app.use('/api/quizzes', quizRoutes);
+app.use('/api/planner', plannerRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // ── Error Handler (must be last) ─────────────────────────────────────────
 app.use(errorHandler);
@@ -44,6 +53,8 @@ async function bootstrap(): Promise<void> {
   try {
     await mongoose.connect(env.MONGODB_URI);
     logger.info(`Connected to MongoDB at ${env.MONGODB_URI}`);
+
+    await qdrantClient.initialize();
 
     app.listen(env.PORT, () => {
       logger.info(`Document service running on port ${env.PORT}`);

@@ -7,6 +7,7 @@ from app.services.extractors.docx_extractor import DocxExtractor
 from app.services.extractors.pptx_extractor import PptxExtractor
 from app.services.extractors.md_extractor import MarkdownExtractor
 from app.services.extractors.txt_extractor import TxtExtractor
+from app.services.extractors.image_extractor import ImageExtractor
 
 class PipelineService:
     def __init__(self):
@@ -15,7 +16,11 @@ class PipelineService:
             ".docx": DocxExtractor(),
             ".pptx": PptxExtractor(),
             ".md": MarkdownExtractor(),
-            ".txt": TxtExtractor()
+            ".txt": TxtExtractor(),
+            ".png": ImageExtractor(),
+            ".jpg": ImageExtractor(),
+            ".jpeg": ImageExtractor(),
+            ".webp": ImageExtractor()
         }
 
     def process_document(self, file_stream: BinaryIO, filename: str) -> ExtractedDocument:

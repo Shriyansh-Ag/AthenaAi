@@ -50,6 +50,23 @@ class PptxExtractor(BaseExtractor):
                     content_blocks.append(cb)
                     
                 elif shape.shape_type == 13: # Picture
+                    image = shape.image
+                    image_bytes = image.blob
+                    
+                    import io
+                    from PIL import Image
+                    import pytesseract
+                    
+                    try:
+                        img = Image.open(io.BytesIO(image_bytes))
+                        ocr_text = pytesseract.image_to_string(img).strip()
+                        if ocr_text:
+                            all_text += ocr_text + " "
+                            cb = ContentBlock(type="paragraph", text=ocr_text)
+                            content_blocks.append(cb)
+                    except Exception as e:
+                        print(f"OCR failed for PPTX image: {e}")
+                        
                     cb = ContentBlock(type="image")
                     content_blocks.append(cb)
                     

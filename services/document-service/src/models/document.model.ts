@@ -17,6 +17,7 @@ export interface IDocument extends Document {
   uploadedAt: Date;
   updatedAt: Date;
   metadata: DocumentMetadata;
+  extractedContent?: any;
 }
 
 const documentSchema = new Schema<IDocument>(
@@ -83,6 +84,10 @@ const documentSchema = new Schema<IDocument>(
     metadata: {
       type: Schema.Types.Mixed,
       default: {},
+    },
+    extractedContent: {
+      type: Schema.Types.Mixed,
+      default: null,
     },
   },
   {

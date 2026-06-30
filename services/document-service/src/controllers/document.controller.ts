@@ -1,6 +1,6 @@
 import { Response, NextFunction } from 'express';
 import { DocumentService } from '../services/document.service';
-import { documentQueryDto, updateDocumentDto } from '../validators/document.validators';
+import { documentQueryDto, updateDocumentDto, searchQueryDto } from '../validators/document.validators';
 import { BadRequestError } from '../utils/app-error';
 import type { AuthenticatedRequest } from '../types';
 
@@ -78,6 +78,28 @@ export class DocumentController {
         success: true,
         data: result.data,
         pagination: result.pagination,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * GET /documents/stats
+   * Get user document statistics
+   */
+  getStats = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const userId = req.user!.userId;
+      const stats = await this.documentService.getStats(userId);
+
+      res.status(200).json({
+        success: true,
+        data: stats,
       });
     } catch (error) {
       next(error);
@@ -186,6 +208,38 @@ export class DocumentController {
       );
       res.setHeader('Content-Length', buffer.length.toString());
       res.send(buffer);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * POST /documents/search
+   * Search chunks across user's documents using Qdrant and MongoDB.
+   */
+  search = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const userId = req.user!.userId;
+      
+      const { query, type, filters, page, limit } = searchQueryDto.parse(req.body);
+
+      const results = await this.documentService.search(
+        userId,
+        query,
+        type,
+        filters,
+        page,
+        limit
+      );
+
+      res.status(200).json({
+        success: true,
+        data: results,
+      });
     } catch (error) {
       next(error);
     }

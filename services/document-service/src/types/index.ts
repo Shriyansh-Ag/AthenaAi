@@ -28,6 +28,7 @@ export type ProcessingStage =
   | 'none'
   | 'pending'
   | 'extracting'
+  | 'chunking'
   | 'embedding'
   | 'complete'
   | 'error';

@@ -6,6 +6,20 @@ import jwt from 'jsonwebtoken';
 import { app } from '../../src/main';
 import { DocumentModel } from '../../src/models/document.model';
 
+import { vi } from 'vitest';
+
+vi.mock('../../src/services/qdrant.client', () => {
+  return {
+    qdrantClient: {
+      initialize: vi.fn().mockResolvedValue(true),
+      upsertVectors: vi.fn().mockResolvedValue(true),
+      deleteByDocumentId: vi.fn().mockResolvedValue(true),
+      search: vi.fn().mockResolvedValue([]),
+    },
+    QdrantService: vi.fn()
+  };
+});
+
 let mongoServer: MongoMemoryServer;
 
 const TEST_SECRET = process.env.JWT_ACCESS_SECRET!;
