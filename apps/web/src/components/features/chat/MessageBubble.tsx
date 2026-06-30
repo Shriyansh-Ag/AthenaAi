@@ -9,7 +9,7 @@ import { CitationBadge } from './CitationBadge';
 import { Bot, User, Check, Copy, Pin } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Message } from 'ai/react';
+import { Message } from '@ai-sdk/react';
 
 interface MessageBubbleProps {
   message: Message;

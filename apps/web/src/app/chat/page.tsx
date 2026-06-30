@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useChat } from 'ai/react';
+import { useChat } from '@ai-sdk/react';
 import { ChatSidebar } from '@/components/features/chat/ChatSidebar';
 import { MessageList } from '@/components/features/chat/MessageList';
 import { ChatInput } from '@/components/features/chat/ChatInput';

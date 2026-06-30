@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Message } from 'ai/react';
+import { Message } from '@ai-sdk/react';
 import { MessageBubble } from './MessageBubble';
 
 interface MessageListProps {
